@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Форум Підприємців 2026 — Meta Ads</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--navy:#1B2A4A;--navy-dark:#10182E;--gold:#E8A52C;--gold-light:#FEF3D7;--green:#2CB67D;--green-light:#E6F7F0;--red:#E05252;--red-light:#FDEAEA;--blue:#3B82F6;--purple:#7C3AED;--slate:#64748B;--bg:#F3F4F8;--white:#fff;--border:#E2E6F0;--text:#1E293B}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.header{background:var(--navy-dark);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.header-left{display:flex;flex-direction:column}
+.header-title{color:#fff;font-size:17px;font-weight:700}
+.header-sub{color:#8FA3C0;font-size:12px;margin-top:2px}
+.header-badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge-h{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700}
+.badge-total{background:var(--gold);color:var(--navy-dark)}
+.badge-period{background:rgba(255,255,255,.12);color:#fff}
+.tabs-wrap{background:var(--navy);padding:0 24px;display:flex;gap:2px;overflow-x:auto}
+.tab{padding:11px 18px;color:#8FA3C0;cursor:pointer;font-size:13px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s}
+.tab:hover{color:#fff}.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.pane{display:none;padding:20px 24px 40px;max-width:1300px;margin:0 auto}
+.pane.active{display:block}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--white);border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.kpi .lbl{font-size:11px;color:var(--slate);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.kpi .val{font-size:24px;font-weight:700;color:var(--navy);line-height:1}
+.kpi .sub{font-size:11px;color:var(--slate);margin-top:4px}
+.kpi.gold{border-top:3px solid var(--gold)}.kpi.green{border-top:3px solid var(--green)}
+.kpi.red{border-top:3px solid var(--red)}.kpi.blue{border-top:3px solid var(--blue)}.kpi.purple{border-top:3px solid var(--purple)}
+.sec{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec::before{content:'';display:inline-block;width:4px;height:16px;background:var(--gold);border-radius:2px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+.card{background:var(--white);border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:16px}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--navy);color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+th.r,td.r{text-align:right}
+td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:nth-child(even) td{background:#F8F9FB}tr:hover td{background:#EEF4FF}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap}
+.tag-lead{background:#DBEAFE;color:#1e40af}.tag-tickets{background:var(--gold-light);color:#92400e}
+.tag-typeform{background:#EDE9FE;color:#5b21b6}.tag-bot{background:#DCFCE7;color:#166534}
+.tag-reach{background:#FEE2E2;color:#991b1b}.tag-thruplay{background:#E0F2FE;color:#0369a1}
+.tag-traffic{background:#F1F5F9;color:#475569}.tag-video{background:#EDE9FE;color:#5b21b6}
+.tag-banner{background:#FEF3D7;color:#92400E}
+.note{font-size:11px;color:var(--slate);padding:8px 12px;background:var(--gold-light);border-radius:6px;border-left:3px solid var(--gold);margin-bottom:12px}
+.good{color:var(--green);font-weight:700}.bad{color:var(--red);font-weight:700}.mid{color:var(--gold);font-weight:700}
+.sub-tabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.st{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;background:var(--white);color:var(--slate);transition:all .2s}
+.st.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sp{display:none}.sp.active{display:block}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-title">📣 Meta Ads — Форум Підприємців 2026</div>
+    <div class="header-sub">Звітний період: 01.03.2026 — 30.06.2026 · Курс: 1$ = 44 грн</div>
+  </div>
+  <div class="header-badges">
+    <div class="badge-h badge-total">$12 354 витрачено · 15 кампаній</div>
+    <div class="badge-h badge-period">799 лідів (form_submit)</div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tab active" onclick="T('overview')">🏠 Зведення</div>
+  <div class="tab" onclick="T('leads')">📋 Ліди (form_submit)</div>
+  <div class="tab" onclick="T('tickets')">🎟 Продажі квитків</div>
+  <div class="tab" onclick="T('typeform')">📝 Тайпформа</div>
+  <div class="tab" onclick="T('bot')">🤖 Трафік у бот</div>
+  <div class="tab" onclick="T('awareness')">📡 Охоплення & Відео</div>
+  <div class="tab" onclick="T('creatives')">🎨 Креативи</div>
+</div>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="pane-overview" class="pane active">
+  <div class="kpi-grid" style="margin-top:16px">
+    <div class="kpi gold"><div class="lbl">Загальний spend</div><div class="val">$12 354</div><div class="sub">~543K грн за курсом 44</div></div>
+    <div class="kpi blue"><div class="lbl">Всього показів</div><div class="val">2,68М</div><div class="sub">15 кампаній</div></div>
+    <div class="kpi green"><div class="lbl">Ліди (form_submit)</div><div class="val">799</div><div class="sub">CPL ~$11.86 середній</div></div>
+    <div class="kpi green"><div class="lbl">Тайпформ ліди</div><div class="val">213</div><div class="sub">CPL ~$4.53 середній</div></div>
+    <div class="kpi purple"><div class="lbl">Трафік у бот</div><div class="val">328</div><div class="sub">CPL ~$0.81</div></div>
+    <div class="kpi gold"><div class="lbl">Покупки квитків</div><div class="val">9–10</div><div class="sub">TicketsTotal · CPL ~$96</div></div>
+    <div class="kpi"><div class="lbl">Охоплення (reach)</div><div class="val">169К</div><div class="sub">$124 витрачено</div></div>
+    <div class="kpi"><div class="lbl">ThruPlay</div><div class="val">106К</div><div class="sub">$367 · Cost/view $0.003</div></div>
+  </div>
+
+  <div class="sec">Розподіл бюджету по цілях</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="sec" style="font-size:13px">Spend по цілях кампаній ($)</div>
+      <div style="position:relative;height:260px"><canvas id="cSpendGoals"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="sec" style="font-size:13px">Результати vs Spend — ефективність по цілях</div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Ціль</th><th class="r">Spend $</th><th class="r">Результатів</th><th class="r">Cost/result $</th><th class="r">Покази</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag tag-lead">form_submit ліди</span></td><td class="r">9 677</td><td class="r">799</td><td class="r good">$12.11</td><td class="r">1 734 814</td></tr>
+            <tr><td><span class="tag tag-typeform">typeform ліди</span></td><td class="r">965</td><td class="r">213</td><td class="r good">$4.53</td><td class="r">176 897</td></tr>
+            <tr><td><span class="tag tag-bot">трафік у бот</span></td><td class="r">264</td><td class="r">328</td><td class="r good">$0.81</td><td class="r">118 268</td></tr>
+            <tr><td><span class="tag tag-tickets">purchase квитки</span></td><td class="r">867</td><td class="r">9</td><td class="r bad">$96.33</td><td class="r">97 959</td></tr>
+            <tr><td><span class="tag tag-thruplay">video thruplay</span></td><td class="r">367</td><td class="r">105 924</td><td class="r good">$0.003</td><td class="r">206 775</td></tr>
+            <tr><td><span class="tag tag-reach">reach охоплення</span></td><td class="r">124</td><td class="r">168 953</td><td class="r good">$0.001</td><td class="r">310 039</td></tr>
+            <tr><td><span class="tag tag-traffic">трафік на сайт</span></td><td class="r">26</td><td class="r">235</td><td class="r good">$0.11</td><td class="r">20 662</td></tr>
+            <tr style="font-weight:700"><td>РАЗОМ</td><td class="r">12 354</td><td class="r">—</td><td class="r">—</td><td class="r">2 683 414</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec" style="font-size:13px">Всі кампанії — повна таблиця</div>
+    <div class="tbl-wrap">
+      <table id="tAllCampaigns"></table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LEADS ═══════════════════════════════ -->
+<div id="pane-leads" class="pane">
+  <div class="note">🎯 Ціль кампаній — <b>form_submit</b>: відправка форми-заявки з сайту (ліди для відділу продажів)</div>
+  <div class="kpi-grid" style="margin-top:0">
+    <div class="kpi gold"><div class="lbl">Spend разом</div><div class="val">$9 677</div><div class="sub">~425 788 грн</div></div>
+    <div class="kpi green"><div class="lbl">Лідів разом</div><div class="val">799</div><div class="sub">form_submit events</div></div>
+    <div class="kpi green"><div class="lbl">Середній CPL</div><div class="val">$12.11</div><div class="sub">~533 грн</div></div>
+    <div class="kpi blue"><div class="lbl">Покази</div><div class="val">1,73М</div><div class="sub">4 кампанії</div></div>
+    <div class="kpi"><div class="lbl">Середній CTR</div><div class="val">0.89%</div><div class="sub"></div></div>
+    <div class="kpi"><div class="lbl">TicketsTotal</div><div class="val">11</div><div class="sub">Покупки квитків з цих кампаній</div></div>
+  </div>
+
+  <div class="card">
+    <div class="sec" style="font-size:13px">Кампанії form_submit — деталізація</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Кампанія</th><th class="r">Spend $</th><th class="r">Ліди</th><th class="r">CPL $</th><th class="r">CTR %</th><th class="r">Покази</th><th class="r">Кліки</th><th class="r">Tickets</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>NO Price (головна)</td>
+            <td class="r">6 391</td><td class="r good">579</td><td class="r good">$11.04</td><td class="r">0.88%</td><td class="r">1 152 096</td><td class="r">10 110</td><td class="r">4</td>
+          </tr>
+          <tr>
+            <td>NO Price #2</td>
+            <td class="r">2 798</td><td class="r">209</td><td class="r mid">$13.39</td><td class="r">0.90%</td><td class="r">526 450</td><td class="r">4 754</td><td class="r">7</td>
+          </tr>
+          <tr>
+            <td>Price (з ціною)</td>
+            <td class="r">332</td><td class="r">7</td><td class="r bad">$47.50</td><td class="r">1.43%</td><td class="r">32 824</td><td class="r">471</td><td class="r">0</td>
+          </tr>
+          <tr>
+            <td>Day 2 (День 2)</td>
+            <td class="r">156</td><td class="r">4</td><td class="r bad">$39.02</td><td class="r">0.77%</td><td class="r">23 444</td><td class="r">190</td><td class="r">0</td>
+          </tr>
+          <tr style="font-weight:700;background:#F8F9FB">
+            <td>РАЗОМ</td>
+            <td class="r">9 677</td><td class="r">799</td><td class="r">$12.11</td><td class="r">0.89%</td><td class="r">1 734 814</td><td class="r">15 525</td><td class="r">11</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="sec" style="font-size:13px">Ліди по кампаніях</div>
+      <div style="position:relative;height:220px"><canvas id="cLeadsCamps"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="sec" style="font-size:13px">Spend vs Ліди — ефективність</div>
+      <div style="position:relative;height:220px"><canvas id="cLeadsEfficiency"></canvas></div>
+    </div>
+  </div>
+
+  <div class="note">💡 <b>Висновок:</b> Кампанія "NO Price" (без показу ціни) — абсолютний лідер: 579 лідів, CPL $11.04. Кампанія "Price" (з ціною) — майже вдвічі дорожча ($47.50 CPL) за кратно менше лідів. Показ ціни в рекламі знижує кількість лідів, але потенційно покращує їх якість.</div>
+</div>
+
+<!-- ═══════════════════════════════ TICKETS ═══════════════════════════════ -->
+<div id="pane-tickets" class="pane">
+  <div class="note">🎯 Ціль кампаній — <b>TicketsTotal</b>: пряма покупка квитка з сайту (без відділу продажів)</div>
+  <div class="kpi-grid" style="margin-top:0">
+    <div class="kpi gold"><div class="lbl">Spend разом</div><div class="val">$867</div><div class="sub">~38 148 грн</div></div>
+    <div class="kpi green"><div class="lbl">TicketsTotal</div><div class="val">9–10</div><div class="sub">прямих покупок квитків</div></div>
+    <div class="kpi red"><div class="lbl">Середній CPP</div><div class="val">$96.33</div><div class="sub">~4 239 грн за квиток</div></div>
+    <div class="kpi blue"><div class="lbl">Покази</div><div class="val">97 959</div><div class="sub">3 кампанії</div></div>
+    <div class="kpi"><div class="lbl">Кліки</div><div class="val">1 007</div><div class="sub">CTR ~1.03%</div></div>
+    <div class="kpi"><div class="lbl">form_submit також</div><div class="val">0–5</div><div class="sub">вторинна конверсія</div></div>
+  </div>
+
+  <div class="card">
+    <div class="sec" style="font-size:13px">Кампанії TicketsTotal — деталізація</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Кампанія</th><th class="r">Spend $</th><th class="r">Tickets</th><th class="r">CPP $</th><th class="r">CTR %</th><th class="r">Покази</th><th class="r">CPM $</th></tr></thead>
+        <tbody>
+          <tr><td>Purchase | Price (базова)</td><td class="r">187</td><td class="r">2</td><td class="r bad">$93.40</td><td class="r">1.12%</td><td class="r">15 422</td><td class="r">$12.11</td></tr>
+          <tr><td>Purchase | Price WARM (тепла аудиторія)</td><td class="r">137</td><td class="r">2</td><td class="r bad">$68.60</td><td class="r">0.90%</td><td class="r">10 533</td><td class="r">$13.02</td></tr>
+          <tr><td>Purchase | Price #3</td><td class="r">543</td><td class="r">5</td><td class="r bad">$108.60</td><td class="r">1.04%</td><td class="r">72 004</td><td class="r">$7.54</td></tr>
+          <tr style="font-weight:700;background:#F8F9FB"><td>РАЗОМ</td><td class="r">867</td><td class="r">9</td><td class="r bad">$96.33</td><td class="r">1.03%</td><td class="r">97 959</td><td class="r">$8.85</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="background:var(--red-light);border-left:4px solid var(--red)">
+    <div class="sec" style="font-size:13px;color:var(--red)">⚠️ Висновок по Purchase кампаніях</div>
+    <p style="font-size:13px;line-height:1.6">CPP $96 за квиток (~4 200 грн) при середньому чеку квитка 6 452 грн — це <b>~65% вартості квитка</b> йде на рекламу. Кампанія на прямі покупки з Meta виявилась дуже дорогою. Значно ефективніший шлях: залучати ліди через form_submit ($11-12 CPL), а продавати вже через відділ продажів.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ TYPEFORM ═══════════════════════════════ -->
+<div id="pane-typeform" class="pane">
+  <div class="note">🎯 Ціль кампаній — <b>TypeformSubmit</b>: заповнення тайпформи (лід-магніт, теплий контакт)</div>
+  <div class="kpi-grid" style="margin-top:0">
+    <div class="kpi gold"><div class="lbl">Spend разом</div><div class="val">$966</div><div class="sub">~42 504 грн</div></div>
+    <div class="kpi green"><div class="lbl">Ліди тайпформа</div><div class="val">213</div><div class="sub">TypeformSubmit events</div></div>
+    <div class="kpi green"><div class="lbl">Середній CPL</div><div class="val">$4.53</div><div class="sub">~199 грн — дуже дешево</div></div>
+    <div class="kpi blue"><div class="lbl">Покази</div><div class="val">176 897</div><div class="sub">3 кампанії</div></div>
+  </div>
+
+  <div class="card">
+    <div class="sec" style="font-size:13px">Кампанії TypeformSubmit — деталізація</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Кампанія</th><th class="r">Spend $</th><th class="r">Ліди</th><th class="r">CPL $</th><th class="r">CTR %</th><th class="r">Покази</th></tr></thead>
+        <tbody>
+          <tr><td>LeadMagnit | Підприємці</td><td class="r">346</td><td class="r">104</td><td class="r good">$3.32</td><td class="r">1.15%</td><td class="r">66 409</td></tr>
+          <tr><td>TypeForm | KYIV</td><td class="r">341</td><td class="r">52</td><td class="r mid">$6.56</td><td class="r">1.39%</td><td class="r">66 096</td></tr>
+          <tr><td>TypeForm | UA (вся Україна)</td><td class="r">279</td><td class="r">57</td><td class="r mid">$4.89</td><td class="r">1.20%</td><td class="r">44 392</td></tr>
+          <tr style="font-weight:700;background:#F8F9FB"><td>РАЗОМ</td><td class="r">966</td><td class="r">213</td><td class="r good">$4.53</td><td class="r">1.25%</td><td class="r">176 897</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="background:var(--green-light);border-left:4px solid var(--green)">
+    <div class="sec" style="font-size:13px;color:var(--green)">✅ Висновок по Тайпформ кампаніях</div>
+    <p style="font-size:13px;line-height:1.6">CPL $4.53 — у <b>2,7 рази дешевше</b> за form_submit ($12.11). Кампанія LeadMagnit показала найкращий результат: $3.32 за лід. Ці ліди тепліші (зацікавлені в конкретному контенті лід-магніту), але потребують подальшої конверсії через продажі.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ BOT ═══════════════════════════════ -->
+<div id="pane-bot" class="pane">
+  <div class="note">🎯 Ціль кампаній — <b>pidryemtsiv_bot</b>: трафік і реєстрація в TG-боті</div>
+  <div class="kpi-grid" style="margin-top:0">
+    <div class="kpi gold"><div class="lbl">Spend разом</div><div class="val">$347</div><div class="sub">~15 268 грн (обидві кампанії)</div></div>
+    <div class="kpi green"><div class="lbl">Реєстрацій у боті</div><div class="val">328</div><div class="sub">основна кампанія #2</div></div>
+    <div class="kpi green"><div class="lbl">CPL (бот)</div><div class="val">$0.81</div><div class="sub">~35 грн — найдешевше</div></div>
+    <div class="kpi blue"><div class="lbl">Покази</div><div class="val">136 845</div><div class="sub">2 кампанії</div></div>
+    <div class="kpi red"><div class="lbl">Кампанія #1</div><div class="val">$82.38</div><div class="sub">0 результатів — технічний збій</div></div>
+  </div>
+
+  <div class="card">
+    <div class="sec" style="font-size:13px">Кампанії трафіку в бот</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Кампанія</th><th class="r">Spend $</th><th class="r">Результатів</th><th class="r">CPL $</th><th class="r">Покази</th><th class="r">Кліки</th></tr></thead>
+        <tbody>
+          <tr><td>TG-bot #1 (немає результату)</td><td class="r">82</td><td class="r bad">0</td><td class="r bad">—</td><td class="r">18 577</td><td class="r">174</td></tr>
+          <tr><td>TG-bot #2 (основна)</td><td class="r">264</td><td class="r good">328</td><td class="r good">$0.81</td><td class="r">118 268</td><td class="r">1 781</td></tr>
+          <tr style="font-weight:700;background:#F8F9FB"><td>РАЗОМ</td><td class="r">347</td><td class="r">328</td><td class="r">$1.06</td><td class="r">136 845</td><td class="r">1 955</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="background:var(--gold-light);border-left:4px solid var(--gold)">
+    <div class="sec" style="font-size:13px">⚠️ Кампанія TG-bot #1 ($82 без результату)</div>
+    <p style="font-size:13px;line-height:1.6">Перша кампанія витратила $82 і не зафіксувала жодного результату — скоріш за все, <b>не був налаштований піксель/подія відстеження</b>. $82 ефективно втрачено. Кампанія #2 — навпаки, один з найдешевших форматів залучення: $0.81 за контакт у боті.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ AWARENESS ═══════════════════════════════ -->
+<div id="pane-awareness" class="pane">
+  <div class="kpi-grid" style="margin-top:16px">
+    <div class="kpi blue"><div class="lbl">ThruPlay spend</div><div class="val">$367</div><div class="sub">~16 136 грн</div></div>
+    <div class="kpi blue"><div class="lbl">ThruPlay переглядів</div><div class="val">105 924</div><div class="sub">Ціна $0.003/перегляд</div></div>
+    <div class="kpi"><div class="lbl">Reach spend</div><div class="val">$124</div><div class="sub">~5 465 грн</div></div>
+    <div class="kpi"><div class="lbl">Reach охоплення</div><div class="val">168 953</div><div class="sub">Ціна $0.001/особу</div></div>
+    <div class="kpi"><div class="lbl">Traffic spend</div><div class="val">$26</div><div class="sub">День 2 кампанія</div></div>
+    <div class="kpi"><div class="lbl">LPV переходів</div><div class="val">235</div><div class="sub">$0.11 за перехід</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="sec" style="font-size:13px">ThruPlay — відеоперегляди</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Метрика</th><th class="r">Значення</th></tr></thead>
+        <tbody>
+          <tr><td>Кампанія</td><td class="r">ThruPlay | NO Price</td></tr>
+          <tr><td>Spend</td><td class="r">$366.73</td></tr>
+          <tr><td>Покази</td><td class="r">206 775</td></tr>
+          <tr><td>Охоплення</td><td class="r">77 014</td></tr>
+          <tr><td>ThruPlay переглядів</td><td class="r good">105 924</td></tr>
+          <tr><td>Ціна за перегляд</td><td class="r good">$0.0035</td></tr>
+          <tr><td>Кліки</td><td class="r">2 310</td></tr>
+          <tr><td>CTR</td><td class="r">1.12%</td></tr>
+          <tr><td>CPM</td><td class="r">$1.77</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="sec" style="font-size:13px">Reach & Traffic</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Метрика</th><th class="r">Reach</th><th class="r">Traffic</th></tr></thead>
+        <tbody>
+          <tr><td>Кампанія</td><td class="r">Охоплення UA</td><td class="r">Traffic Day 2</td></tr>
+          <tr><td>Spend</td><td class="r">$124.21</td><td class="r">$25.94</td></tr>
+          <tr><td>Покази</td><td class="r">310 039</td><td class="r">20 662</td></tr>
+          <tr><td>Охоплення</td><td class="r">168 953</td><td class="r">17 049</td></tr>
+          <tr><td>Результатів</td><td class="r good">168 953</td><td class="r">235 LPV</td></tr>
+          <tr><td>Cost/result</td><td class="r good">$0.001</td><td class="r good">$0.11</td></tr>
+          <tr><td>CTR</td><td class="r">0.04%</td><td class="r">1.48%</td></tr>
+          <tr><td>CPM</td><td class="r">$0.40</td><td class="r">$1.25</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ CREATIVES ═══════════════════════════════ -->
+<div id="pane-creatives" class="pane">
+  <div class="note">📊 Аналіз 142 креативів з кампаній <b>form_submit</b> (головна кампанія на ліди). Дані: spend, ліди, CPL, CTR, Hook Rate (відсоток 3-секундних переглядів для відео).</div>
+
+  <div class="kpi-grid" style="margin-top:0">
+    <div class="kpi gold"><div class="lbl">Активних креативів</div><div class="val">126</div><div class="sub">з 142 — 16 без spend</div></div>
+    <div class="kpi blue"><div class="lbl">Відеокреативів</div><div class="val">65</div><div class="sub">Spend $5 334 (58%)</div></div>
+    <div class="kpi"><div class="lbl">Банерних</div><div class="val">61</div><div class="sub">Spend $3 855 (42%)</div></div>
+    <div class="kpi green"><div class="lbl">Кращий CPL</div><div class="val">$3.95</div><div class="sub">video 1 reels</div></div>
+    <div class="kpi green"><div class="lbl">Найбільше лідів</div><div class="val">145</div><div class="sub">video 19 Анна</div></div>
+    <div class="kpi"><div class="lbl">Найвищий Hook</div><div class="val">22.7%</div><div class="sub">video 14 Лисенко</div></div>
+  </div>
+
+  <div class="sub-tabs">
+    <div class="st active" onclick="ST(this,'cr','all')">Всі (по лідах)</div>
+    <div class="st" onclick="ST(this,'cr','video')">Відео</div>
+    <div class="st" onclick="ST(this,'cr','banner')">Банери</div>
+    <div class="st" onclick="ST(this,'cr','hook')">Hook Rate</div>
+  </div>
+
+  <div id="cr-all" class="sp active">
+    <div class="grid-2">
+      <div class="card">
+        <div class="sec" style="font-size:13px">Відео vs Банер — порівняння</div>
+        <div style="position:relative;height:200px"><canvas id="cTypeComp"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="sec" style="font-size:13px">Топ-10 за кількістю лідів</div>
+        <div style="position:relative;height:200px"><canvas id="cTopLeadsBar"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec" style="font-size:13px">Топ-20 креативів за лідами</div>
+      <div class="tbl-wrap"><table id="tCreativesAll"></table></div>
+    </div>
+  </div>
+
+  <div id="cr-video" class="sp">
+    <div class="card">
+      <div class="sec" style="font-size:13px">Відеокреативи — лише ті що мають ліди, відсортовано по CPL</div>
+      <div class="tbl-wrap"><table id="tCreativesVideo"></table></div>
+    </div>
+  </div>
+
+  <div id="cr-banner" class="sp">
+    <div class="card">
+      <div class="sec" style="font-size:13px">Банерні креативи — лише ті що мають ліди, відсортовано по CPL</div>
+      <div class="tbl-wrap"><table id="tCreativesBanner"></table></div>
+    </div>
+  </div>
+
+  <div id="cr-hook" class="sp">
+    <div class="note">Hook Rate = кількість 3-секундних переглядів / покази × 100%. Норм: 25%+, хороший: 15-25%, слабкий: нижче 15%. Показує наскільки перші секунди відео зупиняють перегортання.</div>
+    <div class="card">
+      <div class="sec" style="font-size:13px">Відео — Hook Rate vs Leads (топ за активністю)</div>
+      <div class="tbl-wrap"><table id="tCreativesHook"></table></div>
+    </div>
+    <div class="card">
+      <div class="sec" style="font-size:13px">Hook Rate по відеоах (мін 500 показів)</div>
+      <div style="position:relative;height:300px"><canvas id="cHookBar"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ HELPERS ══
+function N(n,d=0){return n==null||isNaN(n)?'—':Number(n).toLocaleString('uk-UA',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function D(n){return n==null||isNaN(n)||!isFinite(n)?'—':'$'+N(n,2);}
+function cBadge(v,good,bad){const cl=v<=good?'good':v>=bad?'bad':'mid';return`<span class="${cl}">$${N(v,2)}</span>`;}
+const dOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
+
+// ══ TABS ══
+function T(id){
+  const ids=['overview','leads','tickets','typeform','bot','awareness','creatives'];
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab')[ids.indexOf(id)].classList.add('active');
+  document.getElementById('pane-'+id).classList.add('active');
+}
+function ST(el,prefix,id){
+  el.closest('.pane').querySelectorAll('.st').forEach(t=>t.classList.remove('active'));
+  el.closest('.pane').querySelectorAll('.sp').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(prefix+'-'+id).classList.add('active');
+}
+
+// ══ CAMPAIGNS DATA ══
+const campaigns=[
+  {name:'NO Price (головна)',goal:'form_submit_lead',spend:6391.34,results:579,tickets:4,impressions:1152096,clicks:10110,ctr:0.878,cpm:5.548},
+  {name:'Price (з ціною)',goal:'form_submit_lead',spend:332.49,results:7,tickets:0,impressions:32824,clicks:471,ctr:1.435,cpm:10.129},
+  {name:'Purchase | Price',goal:'tickets_purchase',spend:186.79,results:2,tickets:3,impressions:15422,clicks:172,ctr:1.115,cpm:12.112},
+  {name:'Purchase | Price WARM',goal:'tickets_purchase',spend:137.19,results:2,tickets:null,impressions:10533,clicks:125,ctr:0.9,cpm:13.024},
+  {name:'Purchase | Price #3',goal:'tickets_purchase',spend:543.01,results:5,tickets:null,impressions:72004,clicks:610,ctr:0.847,cpm:7.541},
+  {name:'LeadMagnit Тайпформа',goal:'typeform_lead',spend:345.57,results:104,tickets:null,impressions:66409,clicks:766,ctr:1.154,cpm:5.203},
+  {name:'TG-bot #1 (без результату)',goal:'other',spend:82.38,results:0,tickets:null,impressions:18577,clicks:174,ctr:0.937,cpm:4.433},
+  {name:'TG-bot #2',goal:'tg_bot',spend:264.34,results:328,tickets:null,impressions:118268,clicks:1781,ctr:1.506,cpm:2.235},
+  {name:'ThruPlay | NO Price',goal:'video_thruplay',spend:366.73,results:105924,tickets:null,impressions:206775,clicks:2310,ctr:1.117,cpm:1.774},
+  {name:'NO Price #2',goal:'form_submit_lead',spend:2797.73,results:209,tickets:7,impressions:526450,clicks:4754,ctr:0.903,cpm:5.315},
+  {name:'TypeForm | KYIV',goal:'typeform_lead',spend:341.37,results:52,tickets:null,impressions:66096,clicks:918,ctr:1.389,cpm:5.164},
+  {name:'TypeForm | UA',goal:'typeform_lead',spend:278.59,results:57,tickets:null,impressions:44392,clicks:1117,ctr:1.197,cpm:6.275},  {name:'Охоплення UA',goal:'reach',spend:124.21,results:168953,tickets:null,impressions:310039,clicks:132,ctr:0.043,cpm:0.401},
+  {name:'Day 2 form_submit',goal:'form_submit_lead',spend:156.06,results:4,tickets:null,impressions:23444,clicks:190,ctr:0.811,cpm:6.659},
+  {name:'Traffic Day 2',goal:'traffic',spend:25.94,results:235,tickets:null,impressions:20662,clicks:306,ctr:1.480,cpm:1.255},
+];
+
+const goalColors={form_submit_lead:'#3B82F6',tickets_purchase:'#E8A52C',typeform_lead:'#7C3AED',tg_bot:'#10B981',video_thruplay:'#06B6D4',reach:'#EF4444',traffic:'#94A3B8',other:'#CBD5E1'};
+const goalTag={form_submit_lead:'<span class="tag tag-lead">form_submit</span>',tickets_purchase:'<span class="tag tag-tickets">tickets</span>',typeform_lead:'<span class="tag tag-typeform">typeform</span>',tg_bot:'<span class="tag tag-bot">tg bot</span>',video_thruplay:'<span class="tag tag-thruplay">thruplay</span>',reach:'<span class="tag tag-reach">reach</span>',traffic:'<span class="tag tag-traffic">traffic</span>',other:'<span class="tag" style="background:#F1F5F9;color:#475569">інше</span>'};
+
+// All campaigns table
+const allCampHeader=`<thead><tr><th>Кампанія</th><th>Ціль</th><th class="r">Spend $</th><th class="r">Результатів</th><th class="r">Cost/result $</th><th class="r">CTR %</th><th class="r">Покази</th><th class="r">CPM $</th></tr></thead>`;
+document.getElementById('tAllCampaigns').innerHTML=allCampHeader+'<tbody>'+campaigns.map(c=>{
+  const cpr=c.results>0?(c.spend/c.results):null;
+  return`<tr><td>${c.name}</td><td>${goalTag[c.goal]||''}</td><td class="r">${N(c.spend,2)}</td><td class="r">${N(c.results)}</td><td class="r">${cpr?cBadge(cpr,15,50):'—'}</td><td class="r">${N(c.ctr,2)}%</td><td class="r">${N(c.impressions)}</td><td class="r">${N(c.cpm,2)}</td></tr>`;
+}).join('')+'</tbody>';
+
+// Spend by goal chart
+const goals=['form_submit_lead','typeform_lead','tg_bot','tickets_purchase','video_thruplay','reach','traffic','other'];
+const goalLabels={'form_submit_lead':'form_submit ліди','typeform_lead':'typeform ліди','tg_bot':'трафік у бот','tickets_purchase':'purchase квитки','video_thruplay':'video thruplay','reach':'reach охоплення','traffic':'трафік на сайт','other':'інше'};
+const spendByGoal=goals.map(g=>campaigns.filter(c=>c.goal===g).reduce((s,c)=>s+c.spend,0));
+new Chart(document.getElementById('cSpendGoals'),{
+  type:'doughnut',
+  data:{labels:goals.map(g=>goalLabels[g]),datasets:[{data:spendByGoal,backgroundColor:goals.map(g=>goalColors[g]),borderWidth:2,borderColor:'#fff'}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'right',labels:{font:{size:11},padding:10}}}}
+});
+
+// Leads camps charts
+new Chart(document.getElementById('cLeadsCamps'),{
+  type:'bar',
+  data:{labels:['NO Price (головна)','NO Price #2','Price (з ціною)','Day 2'],datasets:[{data:[579,209,7,4],backgroundColor:['#1B2A4A','#3B82F6','#E05252','#94A3B8'],borderRadius:5}]},
+  options:{...dOpts,scales:{x:{grid:{display:false}},y:{grid:{color:'#E2E6F0'}}}}
+});
+new Chart(document.getElementById('cLeadsEfficiency'),{
+  type:'bar',indexAxis:'y',
+  data:{labels:['NO Price\n(579 лідів)','NO Price #2\n(209 лідів)','Day 2\n(4 ліди)','Price\n(7 лідів)'],datasets:[{data:[11.04,13.39,39.02,47.50],backgroundColor:['#2CB67D','#3B82F6','#E8A52C','#E05252'],borderRadius:5}]},
+  options:{...dOpts,scales:{x:{grid:{color:'#E2E6F0'},title:{display:true,text:'CPL ($)'}},y:{grid:{display:false}}},plugins:{tooltip:{callbacks:{label:c=>`CPL: $${c.raw}`}}}}
+});
+
+// ══ CREATIVES DATA ══
+const creatives=[
+  {name:'video 19 Анна',type:'video',leads:160,spend:1830.32,cpl:11.44,ctr:0.96,impr:338027,hook:18.7},
+  {name:'banner Гасанова',type:'banner',leads:124,spend:984.39,cpl:7.94,ctr:1.04,impr:218202,hook:null},
+  {name:'video 2 reels',type:'video',leads:78,spend:472.94,cpl:6.07,ctr:1.26,impr:74648,hook:17.8},
+  {name:'banner 5 + logo',type:'banner',leads:74,spend:717.04,cpl:9.69,ctr:1.07,impr:173728,hook:null},
+  {name:'video 7 Бобок',type:'video',leads:50,spend:558.15,cpl:11.16,ctr:0.98,impr:76026,hook:16.8},
+  {name:'video 1 reels',type:'video',leads:43,spend:253.63,cpl:5.90,ctr:1.29,impr:41268,hook:12.1},
+  {name:'banner 1',type:'banner',leads:41,spend:611.83,cpl:14.92,ctr:0.64,impr:147521,hook:null},
+  {name:'banner Хмельницький',type:'banner',leads:40,spend:392.93,cpl:9.82,ctr:0.62,impr:99141,hook:null},
+  {name:'video 6 Гасанова',type:'video',leads:38,spend:480.65,cpl:12.65,ctr:1.02,impr:63308,hook:20.4},
+  {name:'video 10',type:'video',leads:24,spend:255.15,cpl:10.63,ctr:0.54,impr:60999,hook:8.9},
+  {name:'banner 1.1',type:'banner',leads:13,spend:210.41,cpl:16.18,ctr:0.53,impr:72539,hook:null},
+  {name:'video 9',type:'video',leads:15,spend:334.21,cpl:22.28,ctr:0.72,impr:39100,hook:10.2},
+  {name:'banner 3',type:'banner',leads:6,spend:105.39,cpl:17.57,ctr:0.82,impr:28510,hook:null},
+  {name:'video 14 Лисенко',type:'video',leads:7,spend:136.14,cpl:19.45,ctr:0.91,impr:17352,hook:22.7},
+  {name:'banner Блок 3 Продукт',type:'banner',leads:8,spend:192.64,cpl:24.08,ctr:1.06,impr:33005,hook:null},
+  {name:'video 13 Коган',type:'video',leads:6,spend:147.82,cpl:24.64,ctr:0.82,impr:15274,hook:22.3},
+  {name:'banner 4',type:'banner',leads:4,spend:50.06,cpl:12.52,ctr:0.92,impr:12100,hook:null},
+  {name:'banner 5',type:'banner',leads:8,spend:87.31,cpl:10.91,ctr:0.86,impr:18723,hook:null},
+  {name:'video 3 reels',type:'video',leads:8,spend:81.99,cpl:10.25,ctr:1.11,impr:12485,hook:14.8},
+  {name:'video 5 reels',type:'video',leads:5,spend:94.18,cpl:18.84,ctr:0.92,impr:15730,hook:12.4},
+];
+creatives.sort((a,b)=>b.leads-a.leads);
+
+function crHeader(hook){return`<thead><tr><th>Назва</th><th>Тип</th><th class="r">Ліди</th><th class="r">Spend $</th><th class="r">CPL $</th><th class="r">CTR %</th><th class="r">Покази</th>${hook?'<th class="r">Hook Rate</th>':''}</tr></thead>`;}
+function crRow(c,hook){
+  const t=c.type==='video'?'<span class="tag tag-video">VIDEO</span>':'<span class="tag tag-banner">BANNER</span>';
+  const hr=c.hook?`<td class="r ${c.hook>20?'good':c.hook>15?'mid':'bad'}">${c.hook.toFixed(1)}%</td>`:'<td class="r">—</td>';
+  return`<tr><td>${c.name}</td><td>${t}</td><td class="r good"><b>${c.leads}</b></td><td class="r">${N(c.spend,2)}</td><td class="r">${cBadge(c.cpl,10,20)}</td><td class="r">${N(c.ctr,2)}%</td><td class="r">${N(c.impr)}</td>${hook?hr:''}</tr>`;
+}
+document.getElementById('tCreativesAll').innerHTML=crHeader(false)+'<tbody>'+creatives.map(c=>crRow(c,false)).join('')+'</tbody>';
+document.getElementById('tCreativesVideo').innerHTML=crHeader(false)+'<tbody>'+[...creatives].filter(c=>c.type==='video').sort((a,b)=>a.cpl-b.cpl).map(c=>crRow(c,false)).join('')+'</tbody>';
+document.getElementById('tCreativesBanner').innerHTML=crHeader(false)+'<tbody>'+[...creatives].filter(c=>c.type==='banner').sort((a,b)=>a.cpl-b.cpl).map(c=>crRow(c,false)).join('')+'</tbody>';
+
+// Hook rate table
+const hookCreatives=[
+  {name:'video 14 Лисенко',hook:22.7,v3s:353,leads:0,cpl:null,impr:1556},
+  {name:'video 13 Коган',hook:22.3,v3s:906,leads:2,cpl:10.92,impr:4064},
+  {name:'video 6 Гасанова (осн)',hook:21.4,v3s:9901,leads:26,cpl:10.94,impr:46182},
+  {name:'video 14 Лисенко #2',hook:21.2,v3s:1933,leads:5,cpl:15.39,impr:9119},
+  {name:'video 6 Гасанова #2',hook:19.3,v3s:3396,leads:8,cpl:14.91,impr:17578},
+  {name:'video 19 Анна (осн)',hook:19.0,v3s:59465,leads:145,cpl:11.35,impr:312941},
+  {name:'video 7 Бобок №2',hook:18.9,v3s:2256,leads:4,cpl:25.92,impr:11923},
+  {name:'video 19 Анна #2',hook:18.4,v3s:4606,leads:15,cpl:12.30,impr:25086},
+  {name:'video 7 Бобок (осн)',hook:18.3,v3s:710,leads:1,cpl:33.61,impr:3877},
+  {name:'video 18 Тетяна+Юлія',hook:17.0,v3s:175,leads:1,cpl:8.07,impr:1029},
+  {name:'video 2 reels',hook:16.5,v3s:8524,leads:68,cpl:5.63,impr:51804},
+  {name:'video 5 Лісовська',hook:15.4,v3s:229,leads:1,cpl:15.26,impr:1486},
+  {name:'video 1 reels',hook:13.7,v3s:4180,leads:37,cpl:5.95,impr:30460},
+];
+document.getElementById('tCreativesHook').innerHTML=`<thead><tr><th>Назва відео</th><th class="r">Hook Rate</th><th class="r">3s переглядів</th><th class="r">Покази</th><th class="r">Ліди</th><th class="r">CPL $</th></tr></thead><tbody>`+hookCreatives.map(h=>`<tr><td>${h.name}</td><td class="r ${h.hook>20?'good':h.hook>15?'mid':'bad'}">${h.hook.toFixed(1)}%</td><td class="r">${N(h.v3s)}</td><td class="r">${N(h.impr)}</td><td class="r">${N(h.leads)}</td><td class="r">${h.cpl?'$'+N(h.cpl,2):'—'}</td></tr>`).join('')+'</tbody>';
+
+// Charts for creatives
+const top10=creatives.slice(0,10);
+new Chart(document.getElementById('cTopLeadsBar'),{
+  type:'bar',indexAxis:'y',
+  data:{labels:top10.map(c=>c.name.slice(0,20)),datasets:[{data:top10.map(c=>c.leads),backgroundColor:top10.map(c=>c.type==='video'?'#7C3AED':'#E8A52C'),borderRadius:4}]},
+  options:{...dOpts,scales:{x:{grid:{color:'#E2E6F0'}},y:{grid:{display:false},ticks:{font:{size:10}}}}}
+});
+new Chart(document.getElementById('cTypeComp'),{
+  type:'bar',
+  data:{labels:['Відео','Банери'],datasets:[
+    {label:'Spend $',data:[5334,3855],backgroundColor:'#1B2A4A',borderRadius:4},
+    {label:'Ліди',data:[452,336],backgroundColor:'#2CB67D',borderRadius:4},
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{x:{grid:{display:false}},y:{grid:{color:'#E2E6F0'}}},plugins:{legend:{display:true,position:'top',labels:{font:{size:11}}}}}
+});
+
+const hookSorted=[...hookCreatives].sort((a,b)=>b.hook-a.hook);
+new Chart(document.getElementById('cHookBar'),{
+  type:'bar',indexAxis:'y',
+  data:{labels:hookSorted.map(c=>c.name.slice(0,25)),datasets:[{data:hookSorted.map(c=>c.hook),backgroundColor:hookSorted.map(c=>c.hook>20?'#2CB67D':c.hook>15?'#E8A52C':'#EF4444'),borderRadius:4}]},
+  options:{...dOpts,scales:{x:{grid:{color:'#E2E6F0'},title:{display:true,text:'Hook Rate %'}},y:{grid:{display:false},ticks:{font:{size:10}}}},plugins:{tooltip:{callbacks:{label:c=>`Hook Rate: ${c.raw}%`}}}}
+});
+</script>
+</body>
+</html>
