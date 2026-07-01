@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Форум Підприємців 2026 — Аналітика</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --navy: #1B2A4A;
+  --navy-dark: #10182E;
+  --gold: #E8A52C;
+  --gold-light: #FEF3D7;
+  --green: #2CB67D;
+  --green-light: #E6F7F0;
+  --red: #E05252;
+  --red-light: #FDEAEA;
+  --blue: #3B82F6;
+  --slate: #64748B;
+  --bg: #F3F4F8;
+  --white: #FFFFFF;
+  --border: #E2E6F0;
+  --text: #1E293B;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+/* ── HEADER ── */
+.header { background: var(--navy-dark); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+.header-title { color: #fff; font-size: 17px; font-weight: 700; letter-spacing: 0.3px; }
+.header-sub { color: #8FA3C0; font-size: 12px; margin-top: 2px; }
+.header-badge { background: var(--gold); color: var(--navy-dark); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+
+/* ── TABS ── */
+.tabs-wrap { background: var(--navy); padding: 0 24px; display: flex; gap: 2px; overflow-x: auto; }
+.tab { padding: 11px 18px; color: #8FA3C0; cursor: pointer; font-size: 13px; font-weight: 600; border-bottom: 3px solid transparent; white-space: nowrap; transition: all .2s; }
+.tab:hover { color: #fff; }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* ── CONTENT ── */
+.tab-content { display: none; padding: 20px 24px 40px; max-width: 1300px; margin: 0 auto; }
+.tab-content.active { display: block; }
+
+/* ── KPI CARDS ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi { background: var(--white); border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+.kpi .lbl { font-size: 11px; color: var(--slate); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+.kpi .val { font-size: 26px; font-weight: 700; color: var(--navy); line-height: 1; }
+.kpi .sub { font-size: 11px; color: var(--slate); margin-top: 5px; }
+.kpi.gold { border-top: 3px solid var(--gold); }
+.kpi.green { border-top: 3px solid var(--green); }
+.kpi.red { border-top: 3px solid var(--red); }
+.kpi.blue { border-top: 3px solid var(--blue); }
+
+/* ── SECTION ── */
+.section-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.section-title::before { content: ''; display: inline-block; width: 4px; height: 16px; background: var(--gold); border-radius: 2px; }
+
+/* ── GRID LAYOUTS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 20px; }
+.grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
+@media(max-width: 900px) { .grid-2,.grid-3,.grid-1-2,.grid-2-1 { grid-template-columns: 1fr; } }
+
+/* ── CARD ── */
+.card { background: var(--white); border-radius: 10px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+.chart-wrap { position: relative; }
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--navy); color: #fff; padding: 9px 10px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; white-space: nowrap; }
+th:not(:first-child) { text-align: right; }
+td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+tr:nth-child(even) td { background: #F8F9FB; }
+tr:hover td { background: #EEF4FF; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+.badge-social { background: #E8F0FE; color: #1a56db; }
+.badge-paid { background: #FEF3D7; color: #92400E; }
+.badge-organic { background: var(--green-light); color: #065F46; }
+.badge-email { background: #F3E8FF; color: #5B21B6; }
+
+/* ── PROGRESS BAR ── */
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.bar-label { width: 180px; font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+.bar-bg { flex: 1; background: var(--border); border-radius: 4px; height: 18px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width .6s ease; display: flex; align-items: center; padding-left: 6px; font-size: 11px; color: #fff; font-weight: 700; }
+.bar-val { width: 70px; text-align: right; font-size: 12px; color: var(--slate); flex-shrink: 0; }
+
+/* ── FUNNEL ── */
+.funnel-item { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.funnel-stage { width: 160px; font-size: 12px; flex-shrink: 0; }
+.funnel-bar-bg { flex: 1; background: var(--border); border-radius: 4px; height: 22px; overflow: hidden; }
+.funnel-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; color: #fff; font-weight: 700; }
+.funnel-count { width: 50px; text-align: right; font-size: 12px; color: var(--slate); }
+.funnel-pct { width: 44px; text-align: right; font-size: 12px; font-weight: 700; }
+
+/* ── RETENTION CIRCLES ── */
+.retention-grid { display: flex; gap: 16px; flex-wrap: wrap; }
+.ret-card { background: var(--white); border-radius: 10px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.07); flex: 1; min-width: 150px; text-align: center; }
+.ret-circle { width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; margin: 0 auto 10px; }
+.ret-num { font-size: 26px; font-weight: 700; }
+.ret-label { font-size: 11px; color: var(--slate); font-weight: 600; }
+
+/* ── SUB-TABS ── */
+.sub-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+.sub-tab { padding: 6px 14px; border-radius: 20px; border: 1.5px solid var(--border); font-size: 12px; font-weight: 600; cursor: pointer; background: var(--white); color: var(--slate); transition: all .2s; }
+.sub-tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+.sub-panel { display: none; }
+.sub-panel.active { display: block; }
+
+/* ── PLAN VS FACT ── */
+.pf-bar { height: 28px; border-radius: 6px; background: var(--border); position: relative; margin-bottom: 4px; }
+.pf-fill-plan { position: absolute; left: 0; top: 0; bottom: 0; background: #CBD5E1; border-radius: 6px; }
+.pf-fill-fact { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 12px; font-weight: 700; }
+.pf-label { font-size: 12px; display: flex; justify-content: space-between; color: var(--slate); margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">📊 Форум Підприємців 2026 — Аналітика</div>
+    <div class="header-sub">Період продажів: 30 берез. — 01 липн. 2026 · Подія: 19 липня 2026</div>
+  </div>
+  <div class="header-badge">694 квитки · 4 477 450 грн</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+  <div class="tab active" onclick="showTab('overview')">🏠 Зведення</div>
+  <div class="tab" onclick="showTab('tickets')">🎟 Квитки</div>
+  <div class="tab" onclick="showTab('leads')">📋 Ліди (CRM)</div>
+  <div class="tab" onclick="showTab('leads-ga4')">📈 Ліди (GA4)</div>
+  <div class="tab" onclick="showTab('sales-ga4')">💰 Продажі (GA4)</div>
+  <div class="tab" onclick="showTab('social')">📱 Соцмережі</div>
+  <div class="tab" onclick="showTab('retention')">🔄 Повернення 2025→2026</div>
+</div>
+
+<!-- ═══════════════════ TAB: OVERVIEW ═══════════════════ -->
+<div id="tab-overview" class="tab-content active">
+  <div class="kpi-grid" style="margin-top:16px;">
+    <div class="kpi gold"><div class="lbl">Квитків продано</div><div class="val">694</div><div class="sub">План: 770 (без Record) → 90,1%</div></div>
+    <div class="kpi gold"><div class="lbl">Загальний дохід</div><div class="val">4,48М грн</div><div class="sub">Середній чек: 6 452 грн</div></div>
+    <div class="kpi green"><div class="lbl">Лідів (CRM)</div><div class="val">1 444</div><div class="sub">Конверсія в оплату: 16,8%</div></div>
+    <div class="kpi blue"><div class="lbl">Лідів (GA4)</div><div class="val">504</div><div class="sub">Середній CR: 2,8%</div></div>
+    <div class="kpi blue"><div class="lbl">Продажів (GA4)</div><div class="val">335</div><div class="sub">Дохід через сайт: ~3,2М грн</div></div>
+    <div class="kpi red"><div class="lbl">Retention 2025→2026</div><div class="val">9,7%</div><div class="sub">11 з 113 учасників 2025</div></div>
+  </div>
+
+  <!-- Plan vs Fact -->
+  <div class="section-title">План vs Факт по типах квитків</div>
+  <div class="card" style="margin-bottom:20px; padding:20px;">
+    <div style="margin-bottom:14px;">
+      <div class="pf-label"><span>Standard (план 590, факт 431)</span><span>73,1%</span></div>
+      <div class="pf-bar">
+        <div class="pf-fill-plan" style="width:100%;"></div>
+        <div class="pf-fill-fact" style="width:73.1%; background:var(--blue);">431</div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div class="pf-label"><span>Business (план 180, факт 160)</span><span>88,9%</span></div>
+      <div class="pf-bar">
+        <div class="pf-fill-plan" style="width:100%;"></div>
+        <div class="pf-fill-fact" style="width:88.9%; background:var(--gold);">160</div>
+      </div>
+    </div>
+    <div>
+      <div class="pf-label"><span>Record (план n/a, факт 34) · Early birds (факт 93)</span><span>—</span></div>
+      <div class="pf-bar">
+        <div class="pf-fill-fact" style="width:100%; background:var(--green);">Record 34 + Early birds 93 = 127</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekly overview both leads and tickets -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">Динаміка продажу квитків по тижнях</div>
+      <div class="chart-wrap" style="height:240px;"><canvas id="chartWeeklyTickets"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Динаміка лідів по тижнях (CRM)</div>
+      <div class="chart-wrap" style="height:240px;"><canvas id="chartWeeklyLeads"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Top channels quick view -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">Топ джерел лідів (GA4)</div>
+      <div class="bar-row"><div class="bar-label">google / cpc</div><div class="bar-bg"><div class="bar-fill" style="width:100%;background:var(--navy);">188</div></div><div class="bar-val">CR 2,97%</div></div>
+      <div class="bar-row"><div class="bar-label">google / organic</div><div class="bar-bg"><div class="bar-fill" style="width:29.8%;background:var(--green);">56</div></div><div class="bar-val">CR 2,26%</div></div>
+      <div class="bar-row"><div class="bar-label">tg / post</div><div class="bar-bg"><div class="bar-fill" style="width:20.2%;background:var(--gold);">38</div></div><div class="bar-val">CR 6,81%</div></div>
+      <div class="bar-row"><div class="bar-label">tiktok / paid</div><div class="bar-bg"><div class="bar-fill" style="width:13.3%;background:#7C3AED;">25</div></div><div class="bar-val">CR 1,24%</div></div>
+      <div class="bar-row"><div class="bar-label">ig / stories</div><div class="bar-bg"><div class="bar-fill" style="width:10.6%;background:#EC4899;">20</div></div><div class="bar-val">CR 10,42%</div></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Топ джерел продажів (GA4)</div>
+      <div class="bar-row"><div class="bar-label">google / organic</div><div class="bar-bg"><div class="bar-fill" style="width:100%;background:var(--green);">75</div></div><div class="bar-val">603К грн</div></div>
+      <div class="bar-row"><div class="bar-label">google / cpc</div><div class="bar-bg"><div class="bar-fill" style="width:97.3%;background:var(--navy);">73</div></div><div class="bar-val">763К грн</div></div>
+      <div class="bar-row"><div class="bar-label">marketing / op</div><div class="bar-bg"><div class="bar-fill" style="width:52%;background:var(--blue);">39</div></div><div class="bar-val">385К грн</div></div>
+      <div class="bar-row"><div class="bar-label">facebook / cpm</div><div class="bar-bg"><div class="bar-fill" style="width:24%;background:#7C3AED;">18</div></div><div class="bar-val">110К грн</div></div>
+      <div class="bar-row"><div class="bar-label">eSputnik / email</div><div class="bar-bg"><div class="bar-fill" style="width:22.7%;background:#8B5CF6;">17</div></div><div class="bar-val">122К грн</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB: TICKETS ═══════════════════ -->
+<div id="tab-tickets" class="tab-content">
+  <div class="kpi-grid" style="margin-top:16px;">
+    <div class="kpi gold"><div class="lbl">Всього квитків</div><div class="val">694</div><div class="sub">без Record: 660</div></div>
+    <div class="kpi gold"><div class="lbl">Загальний дохід</div><div class="val">4 477 450 грн</div><div class="sub">Середній чек: 6 452 грн</div></div>
+    <div class="kpi blue"><div class="lbl">Standard (всі)</div><div class="val">431</div><div class="sub">Дохід: 2 448 350 грн</div></div>
+    <div class="kpi green"><div class="lbl">Business (всі)</div><div class="val">160</div><div class="sub">Дохід: 1 678 700 грн</div></div>
+    <div class="kpi red"><div class="lbl">Record</div><div class="val">34</div><div class="sub">Дохід: 102 000 грн</div></div>
+  </div>
+
+  <div class="grid-2" style="margin-top:4px;">
+    <div class="card">
+      <div class="section-title">Структура квитків — кількість</div>
+      <div class="chart-wrap" style="height:280px;"><canvas id="chartTicketsPie"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Структура квитків — дохід</div>
+      <div class="chart-wrap" style="height:280px;"><canvas id="chartTicketsRevPie"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div class="section-title">Розбивка по типах квитків</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Тип квитка</th><th>Кількість</th><th>Частка</th><th>Сума (грн)</th><th>Частка доходу</th><th>Середній чек</th></tr></thead>
+        <tbody>
+          <tr><td>Standard</td><td>430</td><td>62,0%</td><td>2 442 350</td><td>54,5%</td><td>5 680</td></tr>
+          <tr><td>Business</td><td>136</td><td>19,6%</td><td>1 505 900</td><td>33,6%</td><td>11 073</td></tr>
+          <tr><td>Standard Early birds</td><td>69</td><td>9,9%</td><td>248 400</td><td>5,5%</td><td>3 600</td></tr>
+          <tr><td>Business Early birds</td><td>24</td><td>3,5%</td><td>172 800</td><td>3,9%</td><td>7 200</td></tr>
+          <tr><td>Record</td><td>34</td><td>4,9%</td><td>102 000</td><td>2,3%</td><td>3 000</td></tr>
+          <tr><td>День 2 Standard</td><td>1</td><td>0,1%</td><td>6 000</td><td>0,1%</td><td>6 000</td></tr>
+          <tr style="font-weight:700;background:#F8F9FB;"><td>РАЗОМ</td><td>694</td><td>100%</td><td>4 477 450</td><td>100%</td><td>6 452</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Динаміка продажів квитків по тижнях (наростаючий підсумок)</div>
+    <div class="chart-wrap" style="height:260px;"><canvas id="chartTicketsCumulative"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB: LEADS CRM ═══════════════════ -->
+<div id="tab-leads" class="tab-content">
+  <div class="kpi-grid" style="margin-top:16px;">
+    <div class="kpi gold"><div class="lbl">Всього лідів</div><div class="val">1 444</div><div class="sub">14 тижнів</div></div>
+    <div class="kpi green"><div class="lbl">Оплачено</div><div class="val">243</div><div class="sub">CR 16,8%</div></div>
+    <div class="kpi red"><div class="lbl">Відмова</div><div class="val">710</div><div class="sub">49,2% лідів</div></div>
+    <div class="kpi blue"><div class="lbl">В роботі</div><div class="val">209</div><div class="sub">рішення + перемовини + рахунок</div></div>
+    <div class="kpi"><div class="lbl">Недодзвон</div><div class="val">120</div><div class="sub">8,3% — потенціал</div></div>
+    <div class="kpi"><div class="lbl">Фрод + дублі</div><div class="val">56</div><div class="sub">3,9% сміттєвих лідів</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">Воронка лідів по стадіях</div>
+      <div id="funnelContainer"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Розподіл за стадіями — кільце</div>
+      <div class="chart-wrap" style="height:280px;"><canvas id="chartFunnel"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">Динаміка лідів по тижнях</div>
+      <div class="chart-wrap" style="height:240px;"><canvas id="chartLeadsWeekly"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Квитки в оплачених лідах</div>
+      <div class="chart-wrap" style="height:240px;"><canvas id="chartPaidTicketsCRM"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB: LEADS GA4 ═══════════════════ -->
+<div id="tab-leads-ga4" class="tab-content">
+  <div class="kpi-grid" style="margin-top:16px;">
+    <div class="kpi gold"><div class="lbl">Всього лідів (GA4)</div><div class="val">504</div><div class="sub">form_submit_consultation</div></div>
+    <div class="kpi blue"><div class="lbl">Всього користувачів</div><div class="val">~26K</div><div class="sub">по всіх джерелах</div></div>
+    <div class="kpi green"><div class="lbl">Середній CR</div><div class="val">2,8%</div><div class="sub">з трафіку в ліда</div></div>
+    <div class="kpi"><div class="lbl">Органіка Google</div><div class="val">56 лідів</div><div class="sub">CR 2,26%</div></div>
+  </div>
+
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="showSubTab('leads-ga4','all')">Всі джерела</div>
+    <div class="sub-tab" onclick="showSubTab('leads-ga4','paid')">Платний трафік</div>
+    <div class="sub-tab" onclick="showSubTab('leads-ga4','organic')">Органіка</div>
+    <div class="sub-tab" onclick="showSubTab('leads-ga4','social')">Соцмережі</div>
+  </div>
+
+  <div id="leads-ga4-all" class="sub-panel active">
+    <div class="card" style="margin-bottom:16px;">
+      <div class="section-title">Всі джерела — трафік, ліди, конверсія</div>
+      <div class="tbl-wrap">
+        <table id="tableLeadsAll"></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Ліди по джерелах</div>
+      <div class="chart-wrap" style="height:320px;"><canvas id="chartLeadsAll"></canvas></div>
+    </div>
+  </div>
+
+  <div id="leads-ga4-paid" class="sub-panel">
+    <div class="card">
+      <div class="section-title">Платний трафік</div>
+      <div class="tbl-wrap"><table id="tableLeadsPaid"></table></div>
+    </div>
+  </div>
+
+  <div id="leads-ga4-organic" class="sub-panel">
+    <div class="card">
+      <div class="section-title">Органічний та прямий трафік</div>
+      <div class="tbl-wrap"><table id="tableLeadsOrganic"></table></div>
+    </div>
+  </div>
+
+  <div id="leads-ga4-social" class="sub-panel">
+    <div class="card">
+      <div class="section-title">Соцмережі та месенджери</div>
+      <div class="tbl-wrap"><table id="tableLeadsSocial"></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB: SALES GA4 ═══════════════════ -->
+<div id="tab-sales-ga4" class="tab-content">
+  <div class="kpi-grid" style="margin-top:16px;">
+    <div class="kpi gold"><div class="lbl">Продажів (GA4)</div><div class="val">335</div><div class="sub">purchase events</div></div>
+    <div class="kpi gold"><div class="lbl">Дохід (GA4)</div><div class="val">~3,2М грн</div><div class="sub">по джерелах</div></div>
+    <div class="kpi green"><div class="lbl">Органіка Google</div><div class="val">75 продажів</div><div class="sub">603К грн · CR 3,03%</div></div>
+    <div class="kpi blue"><div class="lbl">Google CPC</div><div class="val">73 продажі</div><div class="sub">763К грн · CR 1,16%</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <div class="section-title">Всі джерела — трафік, продажі, дохід, конверсія</div>
+    <div class="tbl-wrap"><table id="tableSalesAll"></table></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">Продажі по каналах</div>
+      <div class="chart-wrap" style="height:300px;"><canvas id="chartSalesCount"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Дохід по каналах (грн)</div>
+      <div class="chart-wrap" style="height:300px;"><canvas id="chartSalesRevenue"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB: SOCIAL ═══════════════════ -->
+<div id="tab-social" class="tab-content">
+  <div class="kpi-grid" style="margin-top:16px;">
+    <div class="kpi gold"><div class="lbl">Лідів з соцмереж</div><div class="val">73</div><div class="sub">14,5% від всіх GA4 лідів</div></div>
+    <div class="kpi blue"><div class="lbl">Продажів з соцмереж</div><div class="val">65</div><div class="sub">~19% від GA4 продажів</div></div>
+    <div class="kpi green"><div class="lbl">Дохід з соцмереж</div><div class="val">~506К грн</div><div class="sub">~16% від загального</div></div>
+    <div class="kpi"><div class="lbl">Найкращий CR (ліди)</div><div class="val">10,42%</div><div class="sub">ig / stories</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">Соцмережі — ліди (GA4)</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Джерело</th><th>Користувачів</th><th>Лідів</th><th>CR%</th></tr></thead>
+          <tbody>
+            <tr><td>tg / post</td><td>558</td><td>38</td><td>6,81%</td></tr>
+            <tr><td>tiktok / paid</td><td>2 014</td><td>25</td><td>1,24%</td></tr>
+            <tr><td>ig / stories</td><td>192</td><td>20</td><td><b style="color:var(--green)">10,42%</b></td></tr>
+            <tr><td>facebook / cpm</td><td>1 949</td><td>18</td><td>0,92%</td></tr>
+            <tr><td>linktr.ee / referral</td><td>629</td><td>9</td><td>1,43%</td></tr>
+            <tr><td>viber / (not set)</td><td>146</td><td>5</td><td>3,42%</td></tr>
+            <tr><td>fb / post</td><td>82</td><td>5</td><td>6,10%</td></tr>
+            <tr><td>youtube.com / referral</td><td>507</td><td>3</td><td>0,59%</td></tr>
+            <tr><td>ig / social</td><td>140</td><td>3</td><td>2,14%</td></tr>
+            <tr><td>linkedin / post</td><td>78</td><td>2</td><td>2,56%</td></tr>
+            <tr><td>smm / tg</td><td>223</td><td>1</td><td>0,45%</td></tr>
+            <tr style="font-weight:700;background:#F8F9FB;"><td>РАЗОМ</td><td>~6 518</td><td>129</td><td>~2,0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Соцмережі — продажі (GA4)</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Джерело</th><th>Продажів</th><th>Дохід (грн)</th><th>CR%</th></tr></thead>
+          <tbody>
+            <tr><td>facebook / cpm</td><td>18</td><td>109 800</td><td>0,10%</td></tr>
+            <tr><td>viber / (not set)</td><td>10</td><td>73 200</td><td><b style="color:var(--green)">6,85%</b></td></tr>
+            <tr><td>linktr.ee / referral</td><td>10</td><td>83 400</td><td>1,59%</td></tr>
+            <tr><td>smm / tg</td><td>6</td><td>42 000</td><td>2,69%</td></tr>
+            <tr><td>css.viber.com / ref</td><td>4</td><td>65 400</td><td>400%</td></tr>
+            <tr><td>ig / social</td><td>6</td><td>63 600</td><td>4,29%</td></tr>
+            <tr><td>ig / stories</td><td>4</td><td>36 000</td><td>2,08%</td></tr>
+            <tr><td>web.telegram.org</td><td>3</td><td>29 900</td><td>9,09%</td></tr>
+            <tr><td>tg / post</td><td>5</td><td>60 000</td><td>0,90%</td></tr>
+            <tr><td>tiktok / paid</td><td>2</td><td>12 000</td><td>0,10%</td></tr>
+            <tr style="font-weight:700;background:#F8F9FB;"><td>РАЗОМ</td><td>68</td><td>575 300</td><td>~1,0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Порівняння платформ соцмереж — ліди vs продажі</div>
+    <div class="chart-wrap" style="height:280px;"><canvas id="chartSocial"></canvas></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB: RETENTION ═══════════════════ -->
+<div id="tab-retention" class="tab-content">
+  <div class="kpi-grid" style="margin-top:16px;">
+    <div class="kpi"><div class="lbl">Учасників 2025</div><div class="val">113</div><div class="sub">Base для аналізу</div></div>
+    <div class="kpi green"><div class="lbl">Повернулись в 2026</div><div class="val">11</div><div class="sub">9,7% retention rate</div></div>
+    <div class="kpi red"><div class="lbl">Не повернулись</div><div class="val">102</div><div class="sub">90,3% — не прийшли</div></div>
+    <div class="kpi gold"><div class="lbl">Нові в 2026</div><div class="val">510</div><div class="sub">97,9% аудиторія нова</div></div>
+    <div class="kpi blue"><div class="lbl">Всього 2026</div><div class="val">694</div><div class="sub">+514% до бази 2025</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title">Аналіз повернення учасників 2025→2026</div>
+      <div class="chart-wrap" style="height:280px;"><canvas id="chartRetentionDonut"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Склад аудиторії 2026</div>
+      <div class="chart-wrap" style="height:280px;"><canvas id="chartAudience2026"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <div class="section-title">Висновок по retention</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:8px;">
+      <div style="background:var(--red-light); border-radius:8px; padding:14px;">
+        <div style="font-size:20px;font-weight:700;color:var(--red);">9,7%</div>
+        <div style="font-size:12px;margin-top:4px;color:var(--text);">Retention rate — низький показник. Із 113 учасників 2025 повернулось лише 11 осіб.</div>
+      </div>
+      <div style="background:var(--gold-light); border-radius:8px; padding:14px;">
+        <div style="font-size:20px;font-weight:700;color:var(--gold);">90,3%</div>
+        <div style="font-size:12px;margin-top:4px;color:var(--text);">Не повернулись — 102 учасники 2025 року не купили квиток у 2026. Потенціал для реактивації.</div>
+      </div>
+      <div style="background:var(--green-light); border-radius:8px; padding:14px;">
+        <div style="font-size:20px;font-weight:700;color:var(--green);">97,9%</div>
+        <div style="font-size:12px;margin-top:4px;color:var(--text);">Нова аудиторія — 510 учасників, яких не було в 2025. Форум залучає нових людей.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// DATA
+// ══════════════════════════════════════
+const weeklyTickets = {
+  labels: ['30.03\nТиж 14','06.04\nТиж 15','13.04\nТиж 16','20.04\nТиж 17','27.04\nТиж 18','04.05\nТиж 19','11.05\nТиж 20','18.05\nТиж 21','25.05\nТиж 22','01.06\nТиж 23','08.06\nТиж 24','15.06\nТиж 25','22.06\nТиж 26'],
+  data: [2,14,5,28,37,27,14,15,47,23,62,189,231],
+};
+const weeklyLeads = {
+  labels: ['23.03','30.03','06.04','13.04','20.04','27.04','04.05','11.05','18.05','25.05','01.06','08.06','15.06','22.06'],
+  data: [12,24,27,36,111,79,31,59,154,186,138,198,266,117],
+};
+const leadsSources = [
+  {source:"google / cpc", users:6320, leads:188, cr:2.97, type:"paid"},
+  {source:"google / organic", users:2477, leads:56, cr:2.26, type:"organic"},
+  {source:"(not set)", users:3801, leads:50, cr:1.32, type:"direct"},
+  {source:"tg / post", users:558, leads:38, cr:6.81, type:"social"},
+  {source:"tiktok / paid", users:2014, leads:25, cr:1.24, type:"social"},
+  {source:"ig / stories", users:192, leads:20, cr:10.42, type:"social"},
+  {source:"eSputnik / email", users:1177, leads:19, cr:1.61, type:"email"},
+  {source:"facebook / cpm", users:1949, leads:18, cr:0.92, type:"social"},
+  {source:"linktr.ee / ref", users:629, leads:9, cr:1.43, type:"social"},
+  {source:"viber / (not set)", users:146, leads:5, cr:3.42, type:"social"},
+  {source:"site / prom", users:138, leads:5, cr:3.62, type:"other"},
+  {source:"magazine / (not set)", users:40, leads:5, cr:12.5, type:"other"},
+  {source:"fb / post", users:82, leads:5, cr:6.10, type:"social"},
+  {source:"ig / social", users:140, leads:3, cr:2.14, type:"social"},
+  {source:"youtube / ref", users:507, leads:3, cr:0.59, type:"social"},
+  {source:"typeform / forum", users:134, leads:3, cr:2.24, type:"other"},
+  {source:"linkedin / post", users:78, leads:2, cr:2.56, type:"social"},
+];
+const salesSources = [
+  {source:"google / organic", users:2477, purchases:75, revenue:603250, cr:3.03, type:"organic"},
+  {source:"google / cpc", users:6320, purchases:73, revenue:762600, cr:1.16, type:"paid"},
+  {source:"marketing / op", users:216, purchases:39, revenue:385000, cr:18.06, type:"direct"},
+  {source:"facebook / cpm", users:17914, purchases:18, revenue:109800, cr:0.10, type:"social"},
+  {source:"eSputnik / email", users:1177, purchases:17, revenue:121500, cr:1.44, type:"email"},
+  {source:"(not set) / vp", users:86, purchases:13, revenue:110400, cr:15.12, type:"direct"},
+  {source:"viber / (not set)", users:146, purchases:10, revenue:73200, cr:6.85, type:"social"},
+  {source:"linktr.ee / ref", users:629, purchases:10, revenue:83400, cr:1.59, type:"social"},
+  {source:"app.getbee.io", users:1, purchases:8, revenue:60400, cr:800, type:"other"},
+  {source:"marketing / igor", users:30, purchases:8, revenue:62600, cr:26.67, type:"direct"},
+  {source:"mail.google.com", users:11, purchases:7, revenue:86700, cr:63.64, type:"direct"},
+  {source:"ig / social", users:140, purchases:6, revenue:63600, cr:4.29, type:"social"},
+  {source:"smm / tg", users:223, purchases:6, revenue:42000, cr:2.69, type:"social"},
+  {source:"portmone / ref", users:92, purchases:5, revenue:39200, cr:5.43, type:"other"},
+  {source:"tg / post", users:558, purchases:5, revenue:60000, cr:0.90, type:"social"},
+  {source:"css.viber.com", users:1, purchases:4, revenue:65400, cr:400, type:"social"},
+  {source:"ig / stories", users:192, purchases:4, revenue:36000, cr:2.08, type:"social"},
+  {source:"web.telegram.org", users:33, purchases:3, revenue:29900, cr:9.09, type:"social"},
+];
+
+// ══════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  const tabs = ['overview','tickets','leads','leads-ga4','sales-ga4','social','retention'];
+  const idx = tabs.indexOf(id);
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+}
+function showSubTab(tabId, subId) {
+  const parent = document.getElementById('tab-'+tabId);
+  parent.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
+  parent.querySelectorAll('.sub-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tabId+'-'+subId).classList.add('active');
+}
+
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
+function fmtN(n) { return n.toLocaleString('uk-UA'); }
+function typeBadge(t) {
+  const map = {paid:'badge-paid', organic:'badge-organic', social:'badge-social', email:'badge-email', direct:'', other:''};
+  const label = {paid:'Платний', organic:'Органіка', social:'Соцмережі', email:'Email', direct:'Прямий', other:''};
+  return label[t] ? `<span class="badge ${map[t]}">${label[t]}</span>` : '';
+}
+function buildLeadsTable(tbody, data) {
+  const maxL = Math.max(...data.map(d=>d.leads));
+  return `<thead><tr><th>Джерело</th><th>Тип</th><th>Користувачів</th><th>Лідів</th><th>CR%</th></tr></thead><tbody>`
+    + data.map(d=>`<tr><td>${d.source}</td><td>${typeBadge(d.type)}</td><td>${fmtN(d.users)}</td><td><b>${d.leads}</b></td><td>${d.cr}%</td></tr>`).join('')
+    +'</tbody>';
+}
+function buildSalesTable(data) {
+  return `<thead><tr><th>Джерело</th><th>Тип</th><th>Користувачів</th><th>Продажів</th><th>Дохід (грн)</th><th>CR%</th></tr></thead><tbody>`
+    + data.map(d=>`<tr><td>${d.source}</td><td>${typeBadge(d.type)}</td><td>${fmtN(d.users)}</td><td><b>${d.purchases}</b></td><td>${fmtN(d.revenue)}</td><td>${d.cr.toFixed(2)}%</td></tr>`).join('')
+    +'</tbody>';
+}
+
+// ══════════════════════════════════════
+// BUILD TABLES
+// ══════════════════════════════════════
+document.getElementById('tableLeadsAll').innerHTML = buildLeadsTable(null, leadsSources);
+document.getElementById('tableLeadsPaid').innerHTML = buildLeadsTable(null, leadsSources.filter(d=>d.type==='paid'));
+document.getElementById('tableLeadsOrganic').innerHTML = buildLeadsTable(null, leadsSources.filter(d=>['organic','direct','email'].includes(d.type)));
+document.getElementById('tableLeadsSocial').innerHTML = buildLeadsTable(null, leadsSources.filter(d=>d.type==='social'));
+document.getElementById('tableSalesAll').innerHTML = buildSalesTable(salesSources);
+
+// ══════════════════════════════════════
+// FUNNEL
+// ══════════════════════════════════════
+const funnelData = [
+  {stage:"Нова заявка", count:90, color:"#94A3B8"},
+  {stage:"Відправлено лист", count:52, color:"#60A5FA"},
+  {stage:"Прийняття рішення", count:108, color:"#3B82F6"},
+  {stage:"Перемовини", count:30, color:"#2563EB"},
+  {stage:"Фіналізація", count:5, color:"#1D4ED8"},
+  {stage:"Виставлений рахунок", count:5, color:"#7C3AED"},
+  {stage:"Передано B2B", count:6, color:"#8B5CF6"},
+  {stage:"Оплачено", count:243, color:"#10B981"},
+  {stage:"Відмова", count:710, color:"#EF4444"},
+  {stage:"Недодзвон", count:120, color:"#F59E0B"},
+  {stage:"Дубль", count:31, color:"#9CA3AF"},
+  {stage:"Фрод", count:25, color:"#6B7280"},
+  {stage:"Некомерційний", count:19, color:"#D1D5DB"},
+];
+const maxF = Math.max(...funnelData.map(f=>f.count));
+const funnelEl = document.getElementById('funnelContainer');
+funnelEl.innerHTML = funnelData.map(f=>`
+  <div class="funnel-item">
+    <div class="funnel-stage">${f.stage}</div>
+    <div class="funnel-bar-bg">
+      <div class="funnel-bar" style="width:${f.count/maxF*100}%;background:${f.color};">${f.count}</div>
+    </div>
+    <div class="funnel-count">${f.count}</div>
+    <div class="funnel-pct" style="color:${f.color};">${(f.count/1444*100).toFixed(1)}%</div>
+  </div>
+`).join('');
+
+// ══════════════════════════════════════
+// CHARTS
+// ══════════════════════════════════════
+const defOpts = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.formattedValue}`}}},
+};
+
+// Overview: weekly tickets
+new Chart(document.getElementById('chartWeeklyTickets'),{
+  type:'bar', data:{labels:weeklyTickets.labels, datasets:[{data:weeklyTickets.data,
+    backgroundColor: weeklyTickets.data.map((_,i)=>i>=11?'#E8A52C':'#1B2A4A'), borderRadius:4}]},
+  options:{...defOpts, scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#E2E6F0'}}},
+    plugins:{...defOpts.plugins, tooltip:{callbacks:{label:c=>`${c.raw} квитків`}}}}
+});
+
+// Overview: weekly leads
+new Chart(document.getElementById('chartWeeklyLeads'),{
+  type:'bar', data:{labels:weeklyLeads.labels, datasets:[{data:weeklyLeads.data,
+    backgroundColor: weeklyLeads.data.map((_,i)=>i===12?'#E8A52C':i===11?'#2CB67D':'#3B82F6'), borderRadius:4}]},
+  options:{...defOpts, scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#E2E6F0'}}}}
+});
+
+// Tickets: pie qty
+new Chart(document.getElementById('chartTicketsPie'),{
+  type:'doughnut',
+  data:{labels:['Standard (430)','Business (136)','Std Early birds (69)','Biz Early birds (24)','Record (34)','День 2 (1)'],
+    datasets:[{data:[430,136,69,24,34,1], backgroundColor:['#3B82F6','#E8A52C','#60A5FA','#FCD34D','#EF4444','#94A3B8'],
+      borderWidth:2, borderColor:'#fff'}]},
+  options:{responsive:true, maintainAspectRatio:false, cutout:'55%', plugins:{legend:{position:'bottom', labels:{font:{size:11}}}}}
+});
+
+// Tickets: pie revenue
+new Chart(document.getElementById('chartTicketsRevPie'),{
+  type:'doughnut',
+  data:{labels:['Standard 2,44М','Business 1,51М','Biz Early birds 173К','Std Early birds 248К','Record 102К'],
+    datasets:[{data:[2442350,1505900,172800,248400,102000], backgroundColor:['#3B82F6','#E8A52C','#FCD34D','#60A5FA','#EF4444'],
+      borderWidth:2, borderColor:'#fff'}]},
+  options:{responsive:true, maintainAspectRatio:false, cutout:'55%', plugins:{legend:{position:'bottom', labels:{font:{size:11}}}}}
+});
+
+// Tickets cumulative
+const cum = []; let s=0;
+weeklyTickets.data.forEach(v=>{s+=v; cum.push(s);});
+new Chart(document.getElementById('chartTicketsCumulative'),{
+  type:'line', data:{labels:weeklyTickets.labels, datasets:[
+    {label:'По тижнях', data:weeklyTickets.data, type:'bar', backgroundColor:'#CBD5E1', borderRadius:3, yAxisID:'y'},
+    {label:'Наростаючий', data:cum, borderColor:'#E8A52C', backgroundColor:'rgba(232,165,44,.1)', borderWidth:2.5, fill:true, tension:.3, yAxisID:'y1', pointRadius:4, pointBackgroundColor:'#E8A52C'}
+  ]},
+  options:{responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+    scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:'#E2E6F0'},ticks:{font:{size:10}}},y1:{position:'right',grid:{drawOnChartArea:false}}},
+    plugins:{legend:{display:true, position:'top', labels:{font:{size:11}}}}
+  }
+});
+
+// Leads funnel donut
+new Chart(document.getElementById('chartFunnel'),{
+  type:'doughnut',
+  data:{labels:funnelData.map(f=>f.stage),datasets:[{data:funnelData.map(f=>f.count),
+    backgroundColor:funnelData.map(f=>f.color), borderWidth:2, borderColor:'#fff'}]},
+  options:{responsive:true, maintainAspectRatio:false, cutout:'50%',
+    plugins:{legend:{position:'bottom', labels:{font:{size:10}, padding:8}}}}
+});
+
+// Leads weekly (CRM tab)
+new Chart(document.getElementById('chartLeadsWeekly'),{
+  type:'bar', data:{labels:weeklyLeads.labels, datasets:[{data:weeklyLeads.data,
+    backgroundColor:weeklyLeads.data.map((_,i)=>i===12?'#E8A52C':i===11?'#2CB67D':'#3B82F6'), borderRadius:4}]},
+  options:{...defOpts, scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#E2E6F0'}}}}
+});
+
+// Paid tickets CRM
+new Chart(document.getElementById('chartPaidTicketsCRM'),{
+  type:'bar', data:{
+    labels:['Standard','Business','Record','Std Early birds','Biz Early birds'],
+    datasets:[{data:[145,43,21,23,8], backgroundColor:['#3B82F6','#E8A52C','#EF4444','#60A5FA','#FCD34D'], borderRadius:5}]},
+  options:{...defOpts, indexAxis:'y', scales:{x:{grid:{color:'#E2E6F0'}},y:{grid:{display:false}}},
+    plugins:{...defOpts.plugins, tooltip:{callbacks:{label:c=>`${c.raw} шт`}}}}
+});
+
+// Leads GA4 bar
+new Chart(document.getElementById('chartLeadsAll'),{
+  type:'bar',
+  data:{labels:leadsSources.map(d=>d.source),datasets:[{data:leadsSources.map(d=>d.leads),
+    backgroundColor:leadsSources.map(d=>({paid:'#1B2A4A',organic:'#2CB67D',social:'#7C3AED',email:'#3B82F6',direct:'#64748B',other:'#94A3B8'})[d.type]),
+    borderRadius:4}]},
+  options:{...defOpts, indexAxis:'y', scales:{x:{grid:{color:'#E2E6F0'}},y:{grid:{display:false},ticks:{font:{size:11}}}},
+    plugins:{...defOpts.plugins, tooltip:{callbacks:{label:c=>`${c.raw} лідів`}}}}
+});
+
+// Sales count chart
+const top10sales = salesSources.slice(0,10);
+new Chart(document.getElementById('chartSalesCount'),{
+  type:'bar',
+  data:{labels:top10sales.map(d=>d.source),datasets:[{data:top10sales.map(d=>d.purchases),
+    backgroundColor:top10sales.map(d=>({paid:'#1B2A4A',organic:'#2CB67D',social:'#7C3AED',email:'#3B82F6',direct:'#64748B',other:'#94A3B8'})[d.type]),
+    borderRadius:4}]},
+  options:{...defOpts, indexAxis:'y', scales:{x:{grid:{color:'#E2E6F0'}},y:{grid:{display:false},ticks:{font:{size:11}}}},
+    plugins:{...defOpts.plugins, tooltip:{callbacks:{label:c=>`${c.raw} продажів`}}}}
+});
+
+// Sales revenue chart
+const top8byrev = [...salesSources].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
+new Chart(document.getElementById('chartSalesRevenue'),{
+  type:'bar',
+  data:{labels:top8byrev.map(d=>d.source),datasets:[{data:top8byrev.map(d=>d.revenue),
+    backgroundColor:top8byrev.map(d=>({paid:'#1B2A4A',organic:'#2CB67D',social:'#7C3AED',email:'#3B82F6',direct:'#64748B',other:'#94A3B8'})[d.type]),
+    borderRadius:4}]},
+  options:{...defOpts, indexAxis:'y', scales:{x:{grid:{color:'#E2E6F0'},ticks:{callback:v=>Math.round(v/1000)+'К'}},y:{grid:{display:false},ticks:{font:{size:11}}}},
+    plugins:{...defOpts.plugins, tooltip:{callbacks:{label:c=>`${fmtN(c.raw)} грн`}}}}
+});
+
+// Social comparison
+const socialLeads = [
+  {name:'tg / post', leads:38, sales:5}, {name:'tiktok / paid', leads:25, sales:2},
+  {name:'ig / stories', leads:20, sales:4}, {name:'facebook / cpm', leads:18, sales:18},
+  {name:'linktr.ee', leads:9, sales:10}, {name:'viber', leads:5, sales:10},
+  {name:'ig / social', leads:3, sales:6}, {name:'smm / tg', leads:1, sales:6},
+];
+new Chart(document.getElementById('chartSocial'),{
+  type:'bar',
+  data:{labels:socialLeads.map(d=>d.name), datasets:[
+    {label:'Ліди', data:socialLeads.map(d=>d.leads), backgroundColor:'#7C3AED', borderRadius:3},
+    {label:'Продажі', data:socialLeads.map(d=>d.sales), backgroundColor:'#2CB67D', borderRadius:3},
+  ]},
+  options:{responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+    scales:{x:{grid:{display:false}},y:{grid:{color:'#E2E6F0'}}},
+    plugins:{legend:{display:true, position:'top', labels:{font:{size:11}}}}}
+});
+
+// Retention donut
+new Chart(document.getElementById('chartRetentionDonut'),{
+  type:'doughnut',
+  data:{labels:['Повернулись (11)','Не повернулись (102)'],
+    datasets:[{data:[11,102], backgroundColor:['#2CB67D','#EF4444'], borderWidth:3, borderColor:'#fff'}]},
+  options:{responsive:true, maintainAspectRatio:false, cutout:'60%',
+    plugins:{legend:{position:'bottom', labels:{font:{size:12}, padding:12}},
+      tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw} (${(c.raw/113*100).toFixed(1)}%)`}}}}
+});
+
+// Audience 2026
+new Chart(document.getElementById('chartAudience2026'),{
+  type:'doughnut',
+  data:{labels:['Нова аудиторія (510)','Повернулись з 2025 (11)'],
+    datasets:[{data:[510,11], backgroundColor:['#3B82F6','#2CB67D'], borderWidth:3, borderColor:'#fff'}]},
+  options:{responsive:true, maintainAspectRatio:false, cutout:'60%',
+    plugins:{legend:{position:'bottom', labels:{font:{size:12}, padding:12}},
+      tooltip:{callbacks:{label:c=>`${c.label}: ${(c.raw/521*100).toFixed(1)}%`}}}}
+});
+</script>
+</body>
+</html>
